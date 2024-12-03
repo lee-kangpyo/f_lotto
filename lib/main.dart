@@ -100,7 +100,7 @@ class _TapContainer extends State<MyHomePage> {
               label: '즐겨찾기',
           ),
           BottomNavigationBarItem(
-              icon: _selectScreen == 2? const Icon(Icons.search): const Icon(Icons.search),
+              icon: _selectScreen == 2? const Icon(Icons.qr_code_scanner): const Icon(Icons.qr_code_scanner),
               label: '당첨확인'
           ),
           BottomNavigationBarItem(
