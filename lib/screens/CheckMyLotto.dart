@@ -50,8 +50,7 @@ class _CheckMyLottoState extends State<CheckMyLotto> {
 
   @override
   Widget build(BuildContext context) {
-    List<int>? numbers;
-    int? bonus;
+
     double halfWidth = MediaQuery.of(context).size.width / 2;
     double maxSize = 400;
     return Scaffold(
@@ -70,16 +69,39 @@ class _CheckMyLottoState extends State<CheckMyLotto> {
               ),
             ),
           ),
-          (data == null)? const SizedBox.shrink() :
-            Column(
-              children: [
-                GetWinningLottoNumbers(round:data!["round"], setWinningNumber:(_numbers, _bonus){numbers = _numbers;bonus=_bonus;}),
-                ScanResult(data: data,),
-              ],
-            ),
+          (data == null)? const SizedBox.shrink() : BottomWidget(data: data,),
           Container(child: _buildBarcode(_barcode))
         ],
       )
+    );
+  }
+}
+
+class BottomWidget extends StatefulWidget {
+  const BottomWidget({super.key, required this.data, this.winningNumber});
+  final data;
+  final winningNumber;
+
+  @override
+  State<BottomWidget> createState() => _BottomWidgetState();
+}
+
+class _BottomWidgetState extends State<BottomWidget> {
+  List<int>? numbers;
+  int? bonus;
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      children: [
+        GetWinningLottoNumbers(round:widget.data!["round"], setWinningNumber:(_numbers, _bonus){
+          setState(() {
+            numbers = _numbers;
+            bonus=_bonus;
+          });
+        }),
+        ScanResult(data: widget.data, winndingNumber:(numbers==null)?null:{"numbers":numbers, "bonus":bonus}),
+      ],
     );
   }
 }

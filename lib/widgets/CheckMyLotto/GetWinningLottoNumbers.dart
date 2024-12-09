@@ -26,11 +26,16 @@ class _GetWinningLottoNumbersState extends State<GetWinningLottoNumbers> {
     final data = jsonDecode(res.data);
     status = data["returnValue"];
     if(status == "success"){
-      winningNumber = [data["drwtNo1"], data["drwtNo2"], data["drwtNo3"], data["drwtNo4"], data["drwtNo5"], data["drwtNo6"],];
-      bonus = data["bnusNo"];
+      setState(() {
+        winningNumber = [data["drwtNo1"], data["drwtNo2"], data["drwtNo3"], data["drwtNo4"], data["drwtNo5"], data["drwtNo6"],];
+        bonus = data["bnusNo"];
+      });
+
     }else{
-      winningNumber = null;
-      bonus = null;
+      setState(() {
+        winningNumber = null;
+        bonus = null;
+      });
     }
     widget.setWinningNumber(winningNumber, bonus);
   }
@@ -52,8 +57,8 @@ class _GetWinningLottoNumbersState extends State<GetWinningLottoNumbers> {
 
   @override
   void initState() {
-    getWinningNumber ();
     super.initState();
+    getWinningNumber ();
   }
 
   @override

@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
+import 'package:lotto/util/checkWinning.dart';
 import 'package:lotto/widgets/GenerateLotto/LottoNumbers.dart';
 
 class ScanResult extends StatelessWidget {
-  const ScanResult({super.key, required this.data});
+  const ScanResult({super.key, required this.data, this.winndingNumber});
   final data;
+  final Map? winndingNumber;
 
   @override
   Widget build(BuildContext context) {
@@ -24,11 +26,15 @@ class ScanResult extends StatelessWidget {
           ),
           const SizedBox(height: 16,),
           ...numbers.map((numberObj) {
+            String isWinning = (winndingNumber == null)?"-":checkWinning(numberObj["number"], winndingNumber!["numbers"], winndingNumber!["bonus"]);
             return Row(
+              mainAxisAlignment: MainAxisAlignment.center,
               children: [
                 Text(numberObj["type"]),
                 const SizedBox(width: 16,),
-                LottoNumbers(lottoNumbers: numberObj["number"] as List<int>),
+                LottoNumbers(lottoNumbers: numberObj["number"] as List<int>, winningNumbers:winndingNumber),
+                const SizedBox(width: 16,),
+                Text(isWinning),
               ],
             );
             //_BtnWidget(isDuplicate: isDuplicate(lottoNumber), onTap: () => onTap(obj)),
