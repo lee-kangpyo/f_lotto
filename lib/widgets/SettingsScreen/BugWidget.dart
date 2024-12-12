@@ -1,8 +1,10 @@
 import 'dart:io';
 
+import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:lotto/util/http.dart';
 
 class BugWidget extends StatefulWidget {
   @override
@@ -42,20 +44,48 @@ class _BugWidgetState extends State<BugWidget> {
     }
   }
 
-  onSubmit (){
+  onSubmit () async {
     String contents = descriptionController.value.text;
     String step = stepsController.value.text;
 
     isEmptyDescription = (contents.isEmpty)?true:false;
     isEmptyStep  = (step.isEmpty)?true:false;
 
+    Http http = Http();
+
     if(isEmptyDescription || isEmptyStep){
       setState(() {});
     }else{
-      print("저장");
-      print(contents);
-      print(step);
-      print(_images);
+      Response res = await http.postImages("/api/lotto/bug", _images, {"bug":contents, "step":step});
+      if(res.statusCode == 201){
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: const Text("버그 신고가 정상적으로 접수되었습니다."),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(12.0),
+              ),
+              behavior: SnackBarBehavior.floating,
+              elevation: 10, // 그림자 효과
+            ),
+          );
+          Navigator.pop(context);
+        }
+      }else{
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text("버그 신고중 오류가 발생했습니다. 잠시 후 다시 시도해주세요. 에러코드 : ${res.statusCode}"),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(12.0),
+              ),
+              behavior: SnackBarBehavior.floating,
+              elevation: 10, // 그림자 효과
+            ),
+          );
+          Navigator.pop(context);
+        }
+      }
     }
   }
 

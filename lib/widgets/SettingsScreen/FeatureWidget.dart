@@ -1,5 +1,7 @@
+import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:lotto/util/http.dart';
 
 class FeatureWidget extends StatefulWidget {
   @override
@@ -13,16 +15,46 @@ class _FeatureWidgetState extends State<FeatureWidget> {
 
   bool isEmptySuggestion = false;
 
-  onSubmit (){
+  Http http = Http();
+
+  onSubmit () async {
     String suggestion = suggestionController.value.text;
     String additional = additionalController.value.text;
-
     isEmptySuggestion = (suggestion.isEmpty)?true:false;
-
     if(isEmptySuggestion){
       setState(() {});
     }else{
-      print("저장");
+      Response res = await http.post("/api/lotto/suggestion", {"suggestion":suggestion, "additional":additional});
+      if(res.statusCode == 201){
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: const Text("기능 제안이 정상적으로 접수되었습니다."),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(12.0), // 모서리 둥글게
+              ),
+              behavior: SnackBarBehavior.floating, // 부유하는 스타일
+              elevation: 10, // 그림자 효과
+            ),
+          );
+          Navigator.pop(context);
+        }
+      }else{
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text("기능 제안 중 오류가 발생했습니다. 잠시 후 다시 시도해주세요. 에러코드 : ${res
+                  .statusCode}"),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(12.0),
+              ),
+              behavior: SnackBarBehavior.floating,
+              elevation: 10, // 그림자 효과
+            ),
+          );
+          Navigator.pop(context);
+        }
+      }
     }
   }
 

@@ -11,6 +11,8 @@ import 'package:lotto/theme.dart';
 import 'package:provider/provider.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 
+import 'package:flutter_dotenv/flutter_dotenv.dart';
+
 void main() async {
   await Hive.initFlutter();
   Hive.registerAdapter(LottoAdapter());
@@ -19,6 +21,7 @@ void main() async {
   await Hive.openBox<Lotto>("lottos");
   await Hive.openBox<FilterNumbers>("filterNumbers");
   await Hive.openBox<CurrentGenerated>("currentGenerated");
+  await dotenv.load(fileName: ".env");
 
 
   runApp(MultiProvider(

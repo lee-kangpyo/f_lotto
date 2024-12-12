@@ -22,6 +22,9 @@ dependencies:
   mobile_scanner: ^6.0.2
   dio: ^5.7.0
   image_picker: ^1.1.2
+  flutter_dotenv: ^5.2.1
+  flutter_image_compress: ^2.3.0
+
 
 dev_dependencies:
   flutter_test:
@@ -53,3 +56,5 @@ flutter:
         - asset: assets/fonts/SUIT-SemiBold.otf
         - asset: assets/fonts/SUIT-Thin.otf
 
+  assets:
+    - .env
