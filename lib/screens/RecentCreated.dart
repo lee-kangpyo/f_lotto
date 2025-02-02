@@ -52,7 +52,8 @@ class _RecentCreatedState extends State<RecentCreated> {
               valueListenable: Hive.box<CurrentGenerated>("currentGenerated").listenable(),
               builder: (context, box, widget) {
                 final sortedKeys = box.keys.toList()..sort((a, b) {return b - a;});
-                return ListView(
+                print(box.isEmpty);
+                return (box.isEmpty)?const Center(child: Text("최근 생성한 로또 번호가 없습니다.")):ListView(
                   children: sortedKeys.map((key) {
                     final number = box.get(key).lottoNumber;
                     final dateStr = DateFormat('yyyy년 MM월 dd일 HH:mm').format(box.get(key).createDate);

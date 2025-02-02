@@ -2,7 +2,7 @@ name: lotto
 description: 로또번호생성기
 publish_to: 'none' # Remove this line if you wish to publish to pub.dev
 
-version: 1.0.0+1
+version: 1.0.0+9
 
 environment:
   sdk: '>=3.0.6 <4.0.0'
@@ -24,7 +24,8 @@ dependencies:
   image_picker: ^1.1.2
   flutter_dotenv: ^5.2.1
   flutter_image_compress: ^2.3.0
-
+  google_mobile_ads: ^5.2.0
+  flutter_native_splash: ^2.4.1
 
 dev_dependencies:
   flutter_test:
@@ -58,3 +59,18 @@ flutter:
 
   assets:
     - .env
+    - assets/splash/
+
+flutter_native_splash:
+  color: "#ffffff"
+  image: assets/splash/logo.png
+  branding: assets/splash/branding.png
+  image_dark: assets/splash/logo.png
+  branding_dark: assets/splash/branding.png
+  android_12:
+    color: "#ffffff"
+    image: assets/splash/logo12.png
+    branding: assets/splash/branding12.png
+    color_dark: "#ffffff"
+    image_dark: assets/splash/logo12.png
+    branding_dark: assets/splash/branding12.png

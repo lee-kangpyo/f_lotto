@@ -33,7 +33,7 @@ class _FavoratieLottoState extends State<FavoratieLotto> {
       body: ValueListenableBuilder<Box>(
           valueListenable: Hive.box<Lotto>("lottos").listenable(),
           builder: (context, box, widget) {
-            return Container(
+            return (box.isEmpty)?const Center(child: Text("저장한 로또 번호가 없습니다."),):Container(
               padding: const EdgeInsets.all(20),
               child: ListView(
                 children: box.keys.map((key) {

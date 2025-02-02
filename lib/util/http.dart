@@ -106,10 +106,10 @@ class Http {
         'images': imageFiles,
       });
 
-
       final response = await _dio.post(url, data: formData);
       return response;
     } catch (e) {
+      print(e);
       if (e is DioException && e.response != null) {
         // DioException이 발생하고 응답이 있을 경우 해당 응답 리턴
         return Response(

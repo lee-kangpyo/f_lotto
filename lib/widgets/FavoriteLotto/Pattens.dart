@@ -1,25 +1,16 @@
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 
 
-class Pattens extends StatelessWidget {
+class Pattens extends StatefulWidget {
   const Pattens({super.key, required this.numbers});
   final List<int> numbers;
 
   @override
-  Widget build(BuildContext context) {
-    return Column(
-      mainAxisSize: MainAxisSize.min,
-      children: [
-        LottoPage(numbers),
-        ElevatedButton(onPressed: ()=>Navigator.of(context).pop(), child: Text("닫기")),
-      ],
-    );
-  }
+  State<Pattens> createState() => _PattensState();
 }
 
-// 로또 용지 패턴 위젯
-Widget LottoPage(lottoNumbers){
+class _PattensState extends State<Pattens> {
+
   List<List<int?>> numbers = [
     [1, 2, 3, 4, 5, 6, 7],
     [8, 9, 10, 11, 12, 13, 14],
@@ -30,7 +21,78 @@ Widget LottoPage(lottoNumbers){
     [43, 44, 45, null, null, null, null],
   ];
 
-  Widget NumberContainer (int? number, bool isActive){
+  Map<int, GlobalKey> keys = {};
+  //Map<int, Offset> numberPositions = {};
+  List<Offset> numberPostisions = [];
+
+  @override
+  void initState() {
+    super.initState();
+    for (var row in numbers) {
+      for (var num in row) {
+        if(num == null) return;
+        keys[num] = GlobalKey(); // 각 숫자마다 GlobalKey 생성
+      }
+    }
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      saveOffsets();
+    });
+  }
+
+  void saveOffsets(){
+    for (var number in widget.numbers){
+      final GlobalKey? key = keys[number];
+      if (key == null){continue;}
+
+      final RenderBox? box = key.currentContext?.findRenderObject() as RenderBox?;
+      final RenderBox? parentBox = context.findRenderObject() as RenderBox?;
+      if(box == null || parentBox == null){continue;}
+
+      final Offset globalPosition = box.localToGlobal(Offset.zero); // 전역 좌표
+      final Offset localPosition = parentBox.globalToLocal(globalPosition); // 부모 기준 좌표
+      final Size widgetSize = box.size;
+
+      double x = localPosition.dx+widgetSize.width / 2;
+      double y = localPosition.dy+widgetSize.height / 2;
+
+      numberPostisions.add(Offset(x, y));
+    }
+
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Stack(
+      children: [
+        Positioned.fill(
+            child: Container(
+              decoration: const BoxDecoration(),
+              child: CustomPaint(
+                size: const Size(double.infinity, double.infinity),
+                painter: LinePainter(numberPostisions),
+              ),)
+        ),
+        Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            LottoPage(widget.numbers, numbers, keys),
+            ElevatedButton(onPressed: ()=>Navigator.of(context).pop(), child: const Text("닫기")),
+          ],
+        ),
+      ],
+    );
+  }
+}
+
+// 로또 용지 패턴 위젯
+Widget LottoPage(lottoNumbers, List<List<int?>> numbers, Map<int, GlobalKey> keys){
+
+  Widget NumberContainer (int? number, bool isActive, key){
     return Column(
       children: [
         const RotatedBox(
@@ -38,6 +100,7 @@ Widget LottoPage(lottoNumbers){
             child: Text("[", style: TextStyle(fontSize: 20),)
         ),
         Container(
+            key: key,
             alignment: Alignment.center,
             width: 30,
             height: 30,
@@ -51,25 +114,26 @@ Widget LottoPage(lottoNumbers){
       ],
     );
   }
+
   return Padding(
     padding: const EdgeInsets.all(16.0),
     child: Container(
       child: Stack(
         children: [
-          Positioned.fill(
-              child: Container(decoration: BoxDecoration(color: Colors.white),
-                child: CustomPaint(
-                  size: Size(double.infinity, double.infinity),
-                  painter: LinePainter(lottoNumbers, numbers),
-                ),)
-          ),
+          // Positioned.fill(
+          //     child: Container(decoration: const BoxDecoration(color: Colors.white),
+          //       child: CustomPaint(
+          //         size: const Size(double.infinity, double.infinity),
+          //         painter: LinePainter(lottoNumbers, numbers),
+          //       ),)
+          // ),
           Column(
             children: numbers.map((number) {
               return Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children:
                 number.map((value){
-                  return NumberContainer(value, lottoNumbers.contains(value));
+                  return NumberContainer(value, lottoNumbers.contains(value), keys[value]);
                 }).toList(),
               );
             }).toList(),
@@ -80,76 +144,25 @@ Widget LottoPage(lottoNumbers){
   );
 }
 
-// 로또 용지에 렌더링 될 숫자 위젯
-Widget NumberContainer(int? Number) {
-  return Column(
-    children: [
-      const RotatedBox(
-          quarterTurns: 1,
-          child: Text("[", style: TextStyle(fontSize: 20))),
-      Container(
-          alignment: Alignment.center,
-          width: 30,
-          height: 30,
-          decoration: BoxDecoration(
-            color: Colors.red,
-            borderRadius: BorderRadius.circular(15),
-          ),
-          child: Text(Number?.toString() ?? "")),
-      const RotatedBox(
-          quarterTurns: 1,
-          child: Text("]", style: TextStyle(fontSize: 20))),
-    ],
-  );
-}
-
-// CustomPainter 클래스를 생성하여 선을 그릴 부분을 정의
 class LinePainter extends CustomPainter {
-  final List<int> connectNumbers;
-  final List<List<int?>> numbers;
+  final List<Offset> numberPositions;
 
-  LinePainter(this.connectNumbers, this.numbers);
+  LinePainter(this.numberPositions);
 
   @override
-  void paint(Canvas canvas, Size size) {
+  void paint(Canvas canvas, Size size){
     final paint = Paint()
       ..color = Colors.red
       ..strokeWidth = 4;
 
-    const double horizontalPadding = 15.0;
-    const double verticalPadding = 23.0;
-    final int columnCount = numbers[0].length;
-
-    // 번호와 위치를 매핑
-    Map<int, Offset> numberPositions = {};
-    for (int row = 0; row < numbers.length; row++) {
-      for (int col = 0; col < numbers[row].length; col++) {
-        final number = numbers[row][col];
-        if (number == null) {continue;};
-        double x = col * (size.width / columnCount) + horizontalPadding;
-        double y = row * (size.height / numbers.length) + verticalPadding;
-        numberPositions[number] = Offset(x, y);
-      }
+    for (int i = 0; i < numberPositions.length - 1; i++) {
+      canvas.drawLine(numberPositions[i], numberPositions[i + 1], paint);
     }
-
-    // 연결된 번호의 위치를 기반으로 선 그리기
-    List<Offset> points = [];
-    for (var num in connectNumbers) {
-      if (numberPositions.containsKey(num)) {
-        points.add(numberPositions[num]!);
-      } else {
-        debugPrint('Warning: Number $num not found in numbers grid');
-      }
-    }
-
-    // points에 저장된 위치들을 연결하는 선 그리기
-    for (int i = 0; i < points.length - 1; i++) {
-      canvas.drawLine(points[i], points[i + 1], paint);
-    }
-  } 
+  }
 
   @override
   bool shouldRepaint(covariant LinePainter oldDelegate) {
-    return oldDelegate.connectNumbers != connectNumbers;
+    return oldDelegate.numberPositions != numberPositions;
   }
+
 }
